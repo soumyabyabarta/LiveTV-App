@@ -3,24 +3,36 @@ name: Build Android TV APK
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
-      - run: npm run build
+          
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Build Web App
+        run: npm run build
+        
+      - name: Sync Capacitor (Fixes Missing Files)
+        run: npx cap sync android
+        
       - name: Grant execute permission for gradlew
         working-directory: ./android
         run: chmod +x ./gradlew
+        
       - name: Build APK
         working-directory: ./android
         run: ./gradlew assembleDebug
+        
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
